@@ -1,1 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdrawal</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+body {
+  background: #f4f6f9;
+  color: #111;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  transition: .35s;
+}
+body.dark {
+  background: #0b0b0d;
+  color: #f2f2f2;
+}
+.card {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 20px;
+  width: 350px;
+  transition: .35s;
+}
+body.dark .card {
+  background: #111114;
+  border: 1px solid #1f1f25;
+}
+.card h2 {
+  margin-bottom: 15px;
+}
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #111;
+  transition: .3s;
+}
+body.dark input, body.dark select, body.dark button {
+  background: #0f0f12;
+  color: white;
+  border: 1px solid #1f1f25;
+}
+button {
+  background: #f0b90b;
+  color: black;
+  font-weight: 900;
+  cursor: pointer;
+  border: none;
+}
+#loader {
+  display: none;
+  text-align: center;
+  margin: 10px 0;
+}
+.success {
+  color: #00c389;
+  font-weight: 900;
+  text-align: center;
+  margin-top: 10px;
+}
+.warning {
+  color: red;
+  font-weight: bold;
+  font-size: 14px;
+  margin: 0 0 10px 0;
+}
+.theme {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #eee;
+  color: #111;
+  transition: .35s;
+}
+body.dark .theme {
+  background: #222;
+  color: white;
+}
+</style>
+</head>
+<body>
+<div class="theme" onclick="toggleTheme()">☀︎ / 🌙</div>
 
+<div class="card">
+  <h2>Withdraw Funds</h2>
+  
+  <label>Wallet Address</label>
+  <input type="text" id="wallet" placeholder="Enter wallet address">
+  <div id="walletWarn" class="warning"></div>
+
+  <label>Coin</label>
+  <select id="coin" onchange="updateNetwork()">
+    <option value="USDT">USDT</option>
+    <option value="BTC">BTC</option>
+    <option value="SOL">SOL</option>
+    <option value="ETH">ETH</option>
+    <option value="BNB">BNB</option>
+  </select>
+
+  <label>Network</label>
+  <select id="network"></select>
+  <div id="networkWarn" class="warning"></div>
+
+  <label>Amount</label>
+  <input type="number" id="amount" placeholder="Enter amount to withdraw" min="0">
+  <div id="amountWarn" class="warning"></div>
+
+  <button onclick="makeWithdrawal()">Withdraw</button>
+  <div id="loader">Processing withdrawal...</div>
+  <div class="success" id="successMsg"></div>
+</div>
+
+<script>
+// Get current balance from trade.html
+let balance = Number(localStorage.getItem("withdrawableBalance") || 0);
+document.getElementById("amount").value = balance;
+
+// Block if balance is zero
+if(balance <= 0) {
+  alert("No funds available to withdraw. Returning to Trade Room.");
+  setTimeout(()=>{ window.location.href = "trade.html"; }, 1000);
+}
+
+// Coin -> network mapping
+const coinNetworks = {
+  USDT: ["TRC20", "ERC20", "BEP20"],
+  BTC: ["BTC"],
+  SOL: ["SOL"],
+  ETH: ["ERC20"],
+  BNB: ["BEP20"]
+};
+
+// Wallet regex patterns
+const walletRegex = {
+  USDT: /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^T[a-zA-Z0-9]{33}$/,
+  BTC: /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/,
+  SOL: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
+  ETH: /^0x[a-fA-F0-9]{40}$/,
+  BNB: /^bnb[a-z0-9]{39}$/
+};
+
+// Update network dropdown based on coin
+function updateNetwork() {
+  let coin = document.getElementById("coin").value;
+  let n = document.getElementById("network");
+  n.innerHTML = "";
+  coinNetworks[coin].forEach(net => {
+    let option = document.createElement("option");
+    option.value = net;
+    option.text = net;
+    n.add(option);
+  });
+}
+
+// Show warning messages
+function showWarning(elementId, message) {
+  document.getElementById(elementId).innerText = "¡ " + message;
+}
+function clearWarnings() {
+  document.getElementById("walletWarn").innerText = "";
+  document.getElementById("networkWarn").innerText = "";
+  document.getElementById("amountWarn").innerText = "";
+}
+
+// Check if withdrawal lock has passed
+function isTradeUnlocked() {
+  let cycleStart = Number(localStorage.getItem("cycleStart") || 0);
+  let lockDays = Number(localStorage.getItem("withdrawDays") || 7); // fallback 7 days
+  if(!cycleStart) return true; // no trade start time, allow
+  let now = Date.now();
+  let elapsedDays = (now - cycleStart)/(1000*60*60*24);
+  if(elapsedDays < lockDays){
+    alert(`Trade is locked for ${lockDays} days. Returning to Trade Room.`);
+    setTimeout(()=>{ window.location.href="trade.html"; }, 1200);
+    return false;
+  }
+  return true;
+}
+
+// Withdrawal logic
+function makeWithdrawal() {
+  clearWarnings();
+
+  if(!isTradeUnlocked()) return; // stop if locked
+
+  let wallet = document.getElementById("wallet").value.trim();
+  let coin = document.getElementById("coin").value;
+  let network = document.getElementById("network").value;
+  let amt = Number(document.getElementById("amount").value);
+
+  // Wallet validation
+  if(!walletRegex[coin].test(wallet)) {
+    showWarning("walletWarn", "Wallet address format is wrong");
+    return;
+  }
+
+  // Network validation
+  if(!coinNetworks[coin].includes(network)) {
+    showWarning("networkWarn", "Network address is wrong for selected coin");
+    return;
+  }
+
+  // Amount validation
+  if(amt <= 0 || amt > balance) {
+    showWarning("amountWarn", "Amount must be between 0 and your balance");
+    return;
+  }
+
+  // Process withdrawal
+  document.getElementById("loader").style.display = "block";
+  document.getElementById("successMsg").innerText = "";
+
+  setTimeout(()=>{
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("successMsg").innerText = "Withdrawal Successful!";
+    saveHistory(`Withdrawn ${amt} ${coin} to ${wallet} via ${network}`);
+    
+    balance -= amt;
+    localStorage.setItem("withdrawableBalance", balance);
+    document.getElementById("amount").value = balance;
+
+    setTimeout(()=>{ window.location.href = "trade.html"; }, 1500);
+  }, 2000);
+}
+
+// Save withdrawal history
+function saveHistory(txt){
+  let h = JSON.parse(localStorage.getItem("history") || "[]");
+  h.unshift(new Date().toLocaleString() + " — " + txt);
+  localStorage.setItem("history", JSON.stringify(h));
+}
+
+// Init
+window.onload = ()=>{
+  updateNetwork();
+  document.getElementById("amount").setAttribute("max", balance);
+
+  // Read currently selected withdrawal lock from trade.html
+  let lockDays = Number(localStorage.getItem("withdrawDays") || 7);
+  console.log("Withdrawal lock days:", lockDays);
+}
+
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+}
+if(localStorage.getItem("theme") === "dark") document.body.classList.add("dark");
+</script>
+</body>
+</html>
