@@ -1,1 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Room</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+<style>
+:root{
+--bg-light:#f4f6f9; --bg-dark:#0b0b0d;
+--card-light:#fff; --card-dark:#111114;
+--text-light:#111; --text-dark:#f2f2f2;
+--muted:#9b9b9b; --line:#1f1f25;
+--binance:#f0b90b; --danger:#ff3b3b; --success:#00c389;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Roboto;}
+body{background:var(--bg-light);color:var(--text-light);padding-bottom:100px;transition:.35s;}
+body.dark{background:var(--bg-dark);color:var(--text-dark);}
+.topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:14px;display:flex;justify-content:space-between;align-items:center;transition:.35s;}
+body.dark .topbar{background:#0f0f12;}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;}
+.brand img{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);}
+.wrap{padding:14px;max-width:900px;margin:auto;display:grid;gap:14px;}
+.card{background:var(--card-light);border:1px solid var(--line);border-radius:20px;padding:14px;transition:.35s;}
+body.dark .card{background:var(--card-dark);}
+.btn{width:100%;padding:12px;border-radius:14px;border:none;font-weight:900;margin-top:10px;cursor:pointer;}
+.btn.start{background:#f0b90b;color:#000;}
+.btn.cancel{background:#ff3b3b;color:#fff;}
+#holdBtn{background:#38bdf8;color:#fff;}
+.balanceBox{font-size:30px;font-weight:900;margin-top:10px;}
+#profit{font-size:22px;font-weight:900;margin-top:10px;transition:.2s;}
+.up{color:#00c853;animation:flash .5s;}
+.down{color:#ff3d00;animation:flash .5s;}
+@keyframes flash{0%{opacity:.2}100%{opacity:1}}
+
+canvas{width:100%;height:300px;background:#0b0f14;border-radius:14px;margin-top:10px;transition:.35s;}
+
+body.dark canvas{background:#111114;}
+
+select{
+width:100%;padding:10px;border-radius:10px;margin-top:10px;
+border:1px solid var(--line);
+}
+
+.progressWrap{
+margin-top:10px;
+background:#1f2937;
+border-radius:10px;
+height:12px;
+overflow:hidden;
+}
+
+.progressBar{
+height:100%;
+width:0%;
+background:#00c389;
+transition:width .5s linear;
+}
+
+.withdrawBtn{
+background:#22c55e;color:#fff;
+}
+
+.themeToggle{
+position:fixed;top:12px;right:12px;padding:8px 12px;border-radius:8px;background:#eee;color:#111;cursor:pointer;font-size:14px;transition:.35s;
+}
+body.dark .themeToggle{background:#222;color:white;}
+</style>
+</head>
+<body>
+
+<script>if(!localStorage.getItem("loggedin")) location.href="index.html";</script>
+
+<div class="themeToggle" onclick="toggleTheme()">☀︎ / 🌙</div>
+
+<header class="topbar">
+<div class="brand">
+<img src="logo.png">
+<div>Trade Room<br><small id="livePair">BTC/USDT</small></div>
+</div>
+<div style="font-weight:bold;color:#f0b90b;">
+$<span id="totalBalance">500.00</span>
+<button class="btn withdrawBtn" onclick="goWithdraw()">Withdraw</button>
+</div>
+</header>
+
+<main class="wrap">
+
+<section class="card">
+<h3>Live Crypto Signal</h3>
+<select id="pairSelect" onchange="changePair()">
+<option>BTC/USDT</option>
+<option>ETH/USDT</option>
+<option>SOL/USDT</option>
+<option>BNB/USDT</option>
+<option>XRP/USDT</option>
+<option>ADA/USDT</option>
+<option>DOGE/USDT</option>
+<option>AVAX/USDT</option>
+<option>TRX/USDT</option>
+<option>DOT/USDT</option>
+</select>
+<canvas id="chart"></canvas>
+</section>
+
+<section class="card">
+<h3>AI Trade</h3>
+<button class="btn start" id="tradeBtn" onclick="toggleTrade()">Start Trade</button>
+<button class="btn" id="holdBtn" onclick="toggleHold()">Hold Trade</button>
+
+<div id="profit">+$0.00</div>
+<div id="liveBalance" class="balanceBox">Balance: $500.00</div>
+
+<h4 style="margin-top:15px;">Withdrawal Countdown</h4>
+<select id="daySelect" onchange="setCountdown()">
+<option value="7">7 Days</option>
+<option value="30">30 Days</option>
+<option value="60">60 Days</option>
+<option value="90">90 Days</option>
+<option value="120">120 Days</option>
+<option value="150">150 Days</option>
+<option value="180">180 Days</option>
+</select>
+
+<div id="countdownText" style="margin-top:8px;font-weight:bold;"></div>
+<div class="progressWrap">
+<div class="progressBar" id="progressBar"></div>
+</div>
+</section>
+</main>
+
+<script>
+/* ============================
+   TRADE ENGINE WITH BALANCE SYNC FOR WITHDRAWAL
+============================ */
+const START=500;
+const TARGET_GAIN=130;
+const DURATION=5*60*1000;
+
+let tradeActive=localStorage.tradeActive==="true";
+let holdActive=localStorage.holdActive==="true";
+let profitValue=Number(localStorage.profitValue||0);
+let balance=Number(localStorage.balance||START);
+let cycleStart=Number(localStorage.cycleStart||0);
+let cyclesCompleted=Number(localStorage.cyclesCompleted||0);
+let profitLoop,balanceLagTimer;
+
+function saveState(){
+localStorage.tradeActive=tradeActive;
+localStorage.holdActive=holdActive;
+localStorage.profitValue=profitValue;
+localStorage.balance=balance;
+localStorage.cycleStart=cycleStart;
+localStorage.cyclesCompleted=cyclesCompleted;
+localStorage.withdrawableBalance = balance;
+}
+
+function blink(el,type){
+el.classList.remove("up","down");
+void el.offsetWidth;
+el.classList.add(type);
+setTimeout(()=>el.classList.remove("up","down"),500);
+}
+
+function setBalance(v){
+balance=v;
+totalBalance.textContent=balance.toFixed(2);
+liveBalance.textContent="Balance: $"+balance.toFixed(2);
+saveState();
+}
+
+function runProfit(){
+if(!tradeActive||holdActive) return;
+let change=(Math.random()-0.5)*20;
+profitValue+=change;
+profit.textContent=(profitValue>=0?"+$":"-$")+Math.abs(profitValue).toFixed(2);
+blink(profit,change>=0?"up":"down");
+profitLoop=setTimeout(runProfit,2000+Math.random()*2000);
+clearTimeout(balanceLagTimer);
+balanceLagTimer=setTimeout(runBalance,3000);
+}
+
+function runBalance(){
+if(!tradeActive||holdActive) return;
+let now=Date.now();
+let elapsed=now-cycleStart;
+if(elapsed>=DURATION){
+cyclesCompleted++;
+cycleStart=now;
+}
+let guaranteedBase=START + (cyclesCompleted*TARGET_GAIN);
+let progress=(now-cycleStart)/DURATION;
+let fluctuation=(Math.random()-0.5)*40;
+let tempBalance=guaranteedBase + (TARGET_GAIN*progress) + fluctuation;
+setBalance(tempBalance);
+blink(liveBalance,(tempBalance>=balance)?"up":"down");
+blink(totalBalance,(tempBalance>=balance)?"up":"down");
+}
+
+function toggleTrade(){
+tradeActive=!tradeActive;
+holdActive=false;
+if(tradeActive){
+cycleStart=Date.now();
+tradeBtn.className="btn cancel";
+tradeBtn.textContent="Cancel Trade";
+runProfit();
+}else{
+tradeBtn.className="btn start";
+tradeBtn.textContent="Start Trade";
+clearTimeout(profitLoop);
+clearTimeout(balanceLagTimer);
+profitValue=0;
+balance=START;
+cyclesCompleted=0;
+}
+profit.textContent=(profitValue>=0?"+$":"-$")+Math.abs(profitValue).toFixed(2);
+setBalance(balance);
+saveState();
+}
+
+function toggleHold(){
+if(!tradeActive) return;
+holdActive=!holdActive;
+holdBtn.textContent=holdActive?"Continue Trade":"Hold Trade";
+if(!holdActive){
+runProfit();
+}
+saveState();
+}
+
+function goWithdraw(){ window.location.href="withdrawal.html"; }
+
+profit.textContent=(profitValue>=0?"+$":"-$")+Math.abs(profitValue).toFixed(2);
+setBalance(balance);
+
+if(tradeActive){
+tradeBtn.className="btn cancel";
+tradeBtn.textContent="Cancel Trade";
+if(!holdActive) runProfit();
+}
+if(holdActive) holdBtn.textContent="Continue Trade";
+
+/* ============================
+   DARK/LIGHT THEME LOGIC
+============================ */
+const themeToggle = document.querySelector(".themeToggle");
+
+function toggleTheme(){
+  if(document.body.classList.contains("dark")){
+    document.body.classList.remove("dark");
+    localStorage.setItem("theme","light");
+  } else {
+    document.body.classList.add("dark");
+    localStorage.setItem("theme","dark");
+  }
+}
+
+if(localStorage.getItem("theme")==="dark"){
+  document.body.classList.add("dark");
+}
+
+/* ============================
+   CANDLESTICK SIMULATION
+============================ */
+const canvas=document.getElementById("chart");
+const ctx=canvas.getContext("2d");
+canvas.width=canvas.offsetWidth;
+canvas.height=canvas.offsetHeight;
+
+let candles=[];
+let candleCount=50;
+let basePrice=30000;
+
+for(let i=0;i<candleCount;i++){
+    let open=basePrice+(Math.random()-0.5)*200;
+    let close=open+(Math.random()-0.5)*100;
+    let high=Math.max(open,close)+Math.random()*50;
+    let low=Math.min(open,close)-Math.random()*50;
+    candles.push({open,close,high,low});
+}
+
+function drawCandles(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let w=canvas.width/candleCount;
+    let maxH=Math.max(...candles.map(c=>c.high));
+    let minL=Math.min(...candles.map(c=>c.low));
+    let scale=canvas.height/(maxH-minL);
+    candles.forEach((c,i)=>{
+        let x=i*w + w*0.1;
+        let yOpen=canvas.height-(c.open-minL)*scale;
+        let yClose=canvas.height-(c.close-minL)*scale;
+        let yHigh=canvas.height-(c.high-minL)*scale;
+        let yLow=canvas.height-(c.low-minL)*scale;
+        ctx.strokeStyle=c.close>=c.open?'#00c389':'#ff3b3b';
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(x+w/2,yHigh);
+        ctx.lineTo(x+w/2,yLow);
+        ctx.stroke();
+        ctx.fillStyle=ctx.strokeStyle;
+        ctx.fillRect(x,yClose,w*0.8,yOpen-yClose||1);
+    });
+}
+
+function updateCandles(){
+    candles.shift();
+    let last= candles[candles.length-1];
+    let open=last.close;
+    let close=open+(Math.random()-0.5)*100;
+    let high=Math.max(open,close)+Math.random()*50;
+    let low=Math.min(open,close)-Math.random()*50;
+    candles.push({open,close,high,low});
+    drawCandles();
+}
+
+setInterval(updateCandles,1000);
+drawCandles();
+</script>
+</body>
+</html>
