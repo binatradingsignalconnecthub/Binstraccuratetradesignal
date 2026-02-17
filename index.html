@@ -118,6 +118,60 @@ input:not(:placeholder-shown)+label{
   top:-8px;
   font-size:12px;
   color:#f5c518;
+
+Initial states */
+#login{transform:translateX(0);}
+#verify{transform:translateX(100%);}
+
+/* Animation trigger */
+.show-verify #login{transform:translateX(-100%);}
+.show-verify #verify{transform:translateX(0);}
+
+h1{text-align:center;margin-bottom:34px;color:#111;font-size:28px;}
+body.dark h1{color:white;}
+
+.field{position:relative;margin-bottom:24px;}
+
+input{
+  width:100%;
+  padding:18px 16px;
+  border-radius:12px;
+  border:1px solid #ccc;
+  background:white;
+  color:#111;
+  font-size:16px;
+  outline:none;
+  transition:.25s;
+}
+
+body.dark input{
+  background:#0c1117;
+  color:white;
+  border:1px solid #2a3441;
+}
+
+input:focus{
+  border-color:#f5c518;
+  box-shadow:0 0 0 3px rgba(245,197,24,.22);
+}
+
+label{
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#7c8794;
+  padding:0 6px;
+  pointer-events:none;
+  transition:.2s;
+  background:inherit;
+}
+
+input:focus+label,
+input:not(:placeholder-shown)+label{
+  top:-8px;
+  font-size:12px;
+  color:#f5c518;
 }
 
 button{
@@ -172,7 +226,6 @@ body.dark .theme{background:#222;color:white;}
 </style>
 
 </head>
-
 <body>
 
 <div class="app" id="app">
